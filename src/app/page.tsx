@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import './globals.css'; 
 
 export default function Home() {
   return (
@@ -145,19 +146,7 @@ const Visualizer = () => {
       {!micStarted && (
         <button
           onClick={startMic}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 10,
-            padding: '10px 20px',
-            fontSize: '1.2rem',
-            backgroundColor: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-          }}
+          className="start-button"
         >
           Start Microphone
         </button>
