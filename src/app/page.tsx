@@ -72,8 +72,9 @@ const Visualizer = ({ isVisible }: { isVisible: boolean }) => {
   const startMic = async () => {
     try {
       // Create audio context
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioContextRef.current = audioContext;  
+      const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      audioContextRef.current = audioContext;
+  
       // Get microphone stream
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   
