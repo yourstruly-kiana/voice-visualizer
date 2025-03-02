@@ -4,18 +4,51 @@ import React, { useState, useRef, useEffect } from 'react';
 import './globals.css'; 
 
 export default function Home() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Trigger fade-in effect after component mounts
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-4">
-    <div className="w-full">
-      <h1 className="text-4xl font-bold text-center my-4">Voice Visualizer</h1>
-      <p className="text-center mb-8">Speak or make sounds to see the visualization</p>
-      {/* Client component wrapper to avoid hydration issues */}      <ClientVisualizer />
-      </div>    </main>
+    <main style={{ backgroundColor: 'black', minHeight: '100vh' }}>
+      <div className="w-full h-screen relative">
+        {/* Main Title (Upper Left Quadrant) */}
+        <h1
+          className={`text-4xl font-bold text-white fade-in ${isVisible ? 'visible' : ''}`}
+          style={{
+            position: 'absolute',
+            top: '20%',
+            left: '10%',
+            color: 'white'
+          }}
+        >
+          Sound Visualiser
+        </h1>
+
+        {/* Subtitle (Lower Left Quadrant) */}
+        <p
+          className={`text-white fade-in delay ${isVisible ? 'visible' : ''}`}
+          style={{
+            position: 'absolute',
+            bottom: '20%',
+            left: '10%',
+            color: 'white'
+          }}
+        >
+          By yours truly
+        </p>
+
+        {/* Client component wrapper to avoid hydration issues */}
+        <ClientVisualizer isVisible={isVisible} />
+      </div>
+    </main>
   );
 }
 
-// Client component wrapper
-const ClientVisualizer = () => {
+
+const ClientVisualizer = ({ isVisible }: { isVisible: boolean }) => {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -24,11 +57,11 @@ const ClientVisualizer = () => {
 
   if (!isMounted) return null;
 
-  return <Visualizer />;
+  return <Visualizer isVisible={isVisible} />;
 };
 
 // Visualizer component
-const Visualizer = () => {
+const Visualizer = ({ isVisible }: { isVisible: boolean }) => {
   const [micStarted, setMicStarted] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -114,7 +147,7 @@ const Visualizer = () => {
         ctx.fill();
 
         // Reduce opacity for fading effect
-        circle.opacity -= 0.1;
+        circle.opacity -= 0.05; // Adjust this value to control fade speed
 
         // Remove circle if fully faded
         if (circle.opacity <= 0) {
@@ -146,7 +179,7 @@ const Visualizer = () => {
       {!micStarted && (
         <button
           onClick={startMic}
-          className="start-button"
+          className={`start-button fade-in ${isVisible ? 'visible' : ''}`}
         >
           Start Microphone
         </button>
