@@ -18,8 +18,8 @@
   transform: translate(-50%, -50%);
   z-index: 10;
   padding: 12px 24px;
-  background-color: #4a56e2;
-  color: white;
+  background-color: #e719be;
+  color: rgb(0, 0, 0);
   border: none;
   border-radius: 8px;
   font-size: 18px;
@@ -28,5 +28,7 @@
 }
 
 .start-button:hover {
-  background-color: #3a46c2;
+  background-color: #ff1dd2;
+  background-size: 50px;
+  font-size: 30px;
 }
