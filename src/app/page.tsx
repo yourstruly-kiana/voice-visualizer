@@ -6,7 +6,7 @@ import './globals.css';
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
 
-  // Trigger fade-in effect after component mounts
+  
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <main style={{ backgroundColor: 'black', minHeight: '100vh' }}>
       <div className="w-full h-screen relative">
-        {/* Main Title (Upper Left Quadrant) */}
+        {}
         <h1
           className={`text-4xl font-bold text-white fade-in ${isVisible ? 'visible' : ''}`}
           style={{
@@ -24,10 +24,10 @@ export default function Home() {
             color: 'white'
           }}
         >
-          Sound Visualiser
+          Synesthesia 
         </h1>
 
-        {/* Subtitle (Lower Left Quadrant) */}
+        {}
         <p
           className={`text-white fade-in delay ${isVisible ? 'visible' : ''}`}
           style={{
@@ -40,7 +40,7 @@ export default function Home() {
           By yours truly
         </p>
 
-        {/* Client component wrapper to avoid hydration issues */}
+        {}
         <ClientVisualizer isVisible={isVisible} />
       </div>
     </main>
@@ -73,20 +73,19 @@ const Visualizer = ({ isVisible }: { isVisible: boolean }) => {
     try {
       // Create audio context
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      audioContextRef.current = audioContext;
-
+      audioContextRef.current = audioContext;  
       // Get microphone stream
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
+  
       // Create analyzer
       const analyser = audioContext.createAnalyser();
       analyser.fftSize = 2048;
       analyserRef.current = analyser;
-
+  
       // Connect stream to analyzer
       const source = audioContext.createMediaStreamSource(stream);
       source.connect(analyser);
-
+  
       // Start visualization
       setMicStarted(true);
       drawVisualization();
@@ -108,21 +107,19 @@ const Visualizer = ({ isVisible }: { isVisible: boolean }) => {
     const dataArray = new Uint8Array(bufferLength);
 
     const draw = () => {
-      // Ensure canvas is full width/height
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
 
       // Get frequency data
       analyser.getByteFrequencyData(dataArray);
 
-      // Clear canvas with a semi-transparent black overlay for fading effect
       ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Add new circles based on frequency data
       for (let i = 0; i < bufferLength; i++) {
         const frequencyValue = dataArray[i];
-        const normalizedValue = frequencyValue / 255; // Normalize to 0-1
+        const normalizedValue = frequencyValue / 255; 
 
         // Random position for the circle
         const x = Math.random() * canvas.width;
@@ -146,8 +143,8 @@ const Visualizer = ({ isVisible }: { isVisible: boolean }) => {
         ctx.fillStyle = `hsla(${circle.hue}, 100%, 50%, ${circle.opacity})`;
         ctx.fill();
 
-        // Reduce opacity for fading effect
-        circle.opacity -= 0.05; // Adjust this value to control fade speed
+        
+        circle.opacity -= 0.05; // Fade speed
 
         // Remove circle if fully faded
         if (circle.opacity <= 0) {
@@ -155,7 +152,6 @@ const Visualizer = ({ isVisible }: { isVisible: boolean }) => {
         }
       }
 
-      // Continue the animation
       animationRef.current = requestAnimationFrame(draw);
     };
 
