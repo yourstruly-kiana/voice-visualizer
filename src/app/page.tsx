@@ -1,101 +1,138 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useRef, useEffect } from 'react';
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <main className="flex min-h-screen flex-col items-center justify-between p-4">
+      <div className="w-full">
+        <h1 className="text-4xl font-bold text-center my-4">Voice Visualizer</h1>
+        <p className="text-center mb-8">Speak or make sounds to see the visualization</p>
+        {/* Client component wrapper to avoid hydration issues */}
+        <ClientVisualizer />
+      </div>
+    </main>
   );
 }
+
+// Client component wrapper
+const ClientVisualizer = () => {
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  if (!isMounted) return null;
+  
+  return <Visualizer />;
+};
+
+// Visualizer component
+const Visualizer = () => {
+  const [micStarted, setMicStarted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationRef = useRef<number | null>(null);
+
+  const startMic = async () => {
+    try {
+      // Create audio context
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = audioContext;
+
+      // Get microphone stream
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Create analyzer
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 2048;
+      analyserRef.current = analyser;
+
+      // Connect stream to analyzer
+      const source = audioContext.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      // Start visualization
+      setMicStarted(true);
+      drawVisualization();
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      alert("Could not access microphone. Please ensure you've granted permission.");
+    }
+  };
+
+  const drawVisualization = () => {
+    if (!canvasRef.current || !analyserRef.current) return;
+  
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+  
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const waveformData = new Uint8Array(bufferLength);
+  
+    const draw = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 100;
+      analyser.getByteFrequencyData(dataArray);
+      analyser.getByteTimeDomainData(waveformData);
+      ctx.fillStyle = 'rgb(0, 0, 0)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+      // Draw circular waveforms
+      for (let i = 0; i < bufferLength; i++) {
+        const frequencyValue = dataArray[i];
+        const normalizedValue = frequencyValue / 255; // Normalize to 0-1
+        
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+  
+        // Circle size based on frequency
+        const circleSize = normalizedValue * 100;
+  
+        // HSL color based on frequency
+        const hue = (i / bufferLength) * 360;
+        ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+        ctx.beginPath();
+        ctx.arc(x, y, circleSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      animationRef.current = requestAnimationFrame(draw);
+    };
+  
+    draw();
+  };
+
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  return (
+    <div className="visualizer-container">
+      {!micStarted && (
+        <button 
+          onClick={startMic}
+          className="start-button"
+        >
+          Start Microphone
+        </button>
+      )}
+      <canvas 
+        ref={canvasRef} 
+        className="visualization-canvas"
+        style={{ display: micStarted ? 'block' : 'none' }}
+      />
+    </div>
+  );
+};
